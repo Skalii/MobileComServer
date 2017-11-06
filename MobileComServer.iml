@@ -48,5 +48,7 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="Maven: com.jfoenix:jfoenix:1.10.0" level="project" />
+    <orderEntry type="library" name="Maven: io.netty:netty-all:4.0.0.CR3" level="project" />
+    <orderEntry type="library" name="Maven: org.javassist:javassist:3.22.0-GA" level="project" />
   </component>
 </module>
