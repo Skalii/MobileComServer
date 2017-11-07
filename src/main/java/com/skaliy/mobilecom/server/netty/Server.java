@@ -1,4 +1,4 @@
-package com.skaliy.mobilecom.server.netty.server;
+package com.skaliy.mobilecom.server.netty;
 
 import com.skaliy.dbc.dbms.PostgreSQL;
 import io.netty.bootstrap.ServerBootstrap;
@@ -6,16 +6,9 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
-/**
- * Location: service
- * Created: IceSqueez
- * Date: 24.12.2013
- * Time: 15:40
- */
-
 public class Server implements Runnable {
     private final int port;
-    private PostgreSQL db;
+    protected static PostgreSQL db;
 
     public Server(int port, String url, String user, String password) {
         this.port = port;

@@ -1,7 +1,7 @@
 package com.skaliy.mobilecom.server.fxapp;
 
 import com.jfoenix.controls.JFXButton;
-import com.skaliy.mobilecom.server.netty.server.Server;
+import com.skaliy.mobilecom.server.netty.Server;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 

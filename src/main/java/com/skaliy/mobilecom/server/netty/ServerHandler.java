@@ -1,16 +1,11 @@
-package com.skaliy.mobilecom.server.netty.server;
+package com.skaliy.mobilecom.server.netty;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundMessageHandlerAdapter;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 
-/**
- * Location: service
- * Created: IceSqueez
- * Date: 24.12.2013
- * Time: 15:45
- */
+import java.util.Arrays;
 
 public class ServerHandler extends ChannelInboundMessageHandlerAdapter<String> {
     private ChannelGroup channel = new DefaultChannelGroup();
@@ -27,6 +22,12 @@ public class ServerHandler extends ChannelInboundMessageHandlerAdapter<String> {
 
     @Override
     public void messageReceived(final ChannelHandlerContext channelHandlerContext, String message) throws Exception {
-        System.out.println(message);
+        System.out.println("Query from client: " + message + "\nResult: ");
+
+        String[][] result = Server.db.queryResult(message);
+
+        for (String[] aResult : result) {
+            System.out.println(Arrays.toString(aResult));
+        }
     }
 }
