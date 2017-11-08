@@ -22,6 +22,7 @@ public class Controller {
     public void initialize() {
 
         final Server[] server = {null};
+        final Thread[] thread = {null};
 
         buttonStart.setOnAction(event -> {
 
@@ -50,7 +51,8 @@ public class Controller {
                     return;
                 }
 
-                server[0].run();
+                thread[0] = new Thread(server[0]);
+                thread[0].start();
 
                 if (server[0].getDb().isConnected()) {
                     labelStatus.setText("Подключение установлено!");
@@ -63,6 +65,8 @@ public class Controller {
             } else {
                 server[0].getDb().closeConnection();
                 server[0] = null;
+                thread[0].stop();
+                thread[0] = null;
                 buttonStart.setText("Запустить");
                 labelStatus.setText("Соединение закрыто!");
                 System.out.println("[SERVER] - shutdown");
