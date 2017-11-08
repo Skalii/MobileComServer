@@ -2,7 +2,7 @@ package com.skaliy.mobilecom.server.fxapp;
 
 import com.jfoenix.controls.JFXButton;
 import com.skaliy.mobilecom.server.modules.FileConnectionDB;
-import com.skaliy.mobilecom.server.netty.Server;
+import com.skaliy.ns.Server;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
@@ -72,6 +72,20 @@ public class Controller {
                 System.out.println("[SERVER] - shutdown");
             }
 
+        });
+
+        Main.stage.setOnCloseRequest(event -> {
+            if (server[0] != null) {
+                server[0].getDb().closeConnection();
+                server[0] = null;
+            }
+            if (thread[0] != null) {
+                thread[0].stop();
+                thread[0] = null;
+            }
+            if (server[0] == null && thread[0] == null) {
+                System.out.println("[SERVER] - shutdown");
+            } else System.out.println("[SERVER] - did not shutdown");
         });
 
     }
