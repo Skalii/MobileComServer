@@ -36,6 +36,7 @@ public class Controller {
                         JOptionPane.getRootFrame(),
                         "Файл с параметрами подключения не существует!\n" +
                                 "Создайте файл \"server.txt\" со значениями host, user, password.");
+                return;
             }
 
             if (server[0] == null) {
@@ -46,7 +47,8 @@ public class Controller {
                             dataConnection.readLine(),
                             dataConnection.readLine());
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    server[0] = null;
+                    return;
                 }
 
                 thread[0] = new Thread(server[0]);
@@ -55,6 +57,7 @@ public class Controller {
                 if (server[0].getDb().isConnected()) {
                     labelStatus.setText("Подключение установлено!");
                     buttonStart.setText("Отключить");
+                    System.out.println("[SERVER] - start");
                 } else {
                     labelStatus.setText("Упс! Возникла проблема.");
                 }
@@ -66,6 +69,7 @@ public class Controller {
                 thread[0] = null;
                 buttonStart.setText("Запустить");
                 labelStatus.setText("Соединение закрыто!");
+                System.out.println("[SERVER] - shutdown");
             }
 
         });
