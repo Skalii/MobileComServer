@@ -6,7 +6,8 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
-public class Server implements Runnable {
+public class Server {
+
     private final int port;
     protected static PostgreSQL db;
 
@@ -15,20 +16,23 @@ public class Server implements Runnable {
         db = new PostgreSQL(url, user, password);
     }
 
-    @Override
     public void run() {
-        EventLoopGroup eventWork = new NioEventLoopGroup();
-        EventLoopGroup eventBoss = new NioEventLoopGroup();
+        EventLoopGroup bossGroup = new NioEventLoopGroup();
+        EventLoopGroup workerGroup = new NioEventLoopGroup();
+
         try {
             ServerBootstrap bootstrap = new ServerBootstrap()
-                    .group(eventBoss, eventWork)
+                    .group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new ServerInitializer(this.port));
-            bootstrap.bind(this.port).sync().channel().closeFuture().sync();
-        } catch (InterruptedException ignored) {
+                    .childHandler(new ServerInitializer(port));
+
+            bootstrap.bind(port).sync().channel().closeFuture().sync();
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         } finally {
-            eventBoss.shutdownGracefully();
-            eventWork.shutdownGracefully();
+            bossGroup.shutdownGracefully();
+            workerGroup.shutdownGracefully();
         }
     }
 
