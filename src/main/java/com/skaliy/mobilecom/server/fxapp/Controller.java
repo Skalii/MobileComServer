@@ -1,6 +1,7 @@
 package com.skaliy.mobilecom.server.fxapp;
 
 import com.jfoenix.controls.JFXButton;
+import com.jfoenix.controls.JFXTextArea;
 import com.skaliy.mobilecom.server.modules.FileConnectionDB;
 import com.skaliy.ns.Server;
 import javafx.fxml.FXML;
@@ -18,6 +19,9 @@ public class Controller {
 
     @FXML
     private Label labelStatus;
+
+    @FXML
+    private JFXTextArea textAreaLogs;
 
     public void initialize() {
 
@@ -51,15 +55,18 @@ public class Controller {
                     return;
                 }
 
+                server[0].setTextAreaLogs(textAreaLogs);
+
                 thread[0] = new Thread(server[0]);
                 thread[0].start();
+
 
                 if (server[0].getDb().isConnected()) {
                     labelStatus.setText("Подключение установлено!");
                     buttonStart.setText("Отключить");
-                    System.out.println("[SERVER] - start");
+                    textAreaLogs.appendText("[SERVER] - start\n");
                 } else {
-                    labelStatus.setText("Упс! Возникла проблема.");
+                    textAreaLogs.appendText("Упс! Возникла проблема.\n");
                 }
 
             } else {
@@ -69,7 +76,7 @@ public class Controller {
                 thread[0] = null;
                 buttonStart.setText("Запустить");
                 labelStatus.setText("Соединение закрыто!");
-                System.out.println("[SERVER] - shutdown");
+                textAreaLogs.appendText("[SERVER] - shutdown\n");
             }
 
         });
@@ -84,8 +91,8 @@ public class Controller {
                 thread[0] = null;
             }
             if (server[0] == null && thread[0] == null) {
-                System.out.println("[SERVER] - shutdown");
-            } else System.out.println("[SERVER] - did not shutdown");
+                textAreaLogs.appendText("[SERVER] - shutdown\n");
+            } else textAreaLogs.appendText("[SERVER] - did not shutdown\n");
         });
 
     }
