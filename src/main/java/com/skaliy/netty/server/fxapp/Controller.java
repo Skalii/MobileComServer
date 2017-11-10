@@ -3,7 +3,7 @@ package com.skaliy.netty.server.fxapp;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextArea;
 import com.skaliy.netty.server.modules.FileConnectionDB;
-import com.skaliy.ns.Server;
+import com.skaliy.netty.ns.Server;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
