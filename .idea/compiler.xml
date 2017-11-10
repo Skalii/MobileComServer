@@ -7,10 +7,14 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="MobileComServer" />
+        <module name="NettyServer" />
+        <module name="Server" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="MobileComServer" target="1.8" />
+      <module name="NettyServer" target="1.8" />
+      <module name="Server" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

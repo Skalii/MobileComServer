@@ -1,4 +1,4 @@
-package com.skaliy.mobilecom.server.modules;
+package com.skaliy.netty.server.modules;
 
 import java.io.*;
 

@@ -1,4 +1,4 @@
-package com.skaliy.mobilecom.server.fxapp;
+package com.skaliy.netty.server.fxapp;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
