@@ -11,7 +11,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: com.skaliy:com.skaliy.netty.ns:1.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: com.skaliy:com.skaliy.dbc:1.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: com.intellij:annotations:12.0" level="project" />
     <orderEntry type="library" name="Maven: org.jetbrains:annotations:15.0" level="project" />
@@ -50,6 +49,5 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="Maven: com.jfoenix:jfoenix:1.10.0" level="project" />
   </component>
 </module>

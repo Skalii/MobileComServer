@@ -1,4 +1,4 @@
-package com.skaliy.netty.server.fxapp;
+package com.skaliy.mobilecom.server.fxapp;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -15,7 +15,7 @@ public class Main extends Application {
         stage = primaryStage;
 
         Parent root = FXMLLoader.load(getClass().getResource("/fxml/main.fxml"));
-        primaryStage.setTitle("Управление сервером");
+        primaryStage.setTitle("Управление сервером \"Салон мобильной связи\"");
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
     }

@@ -1,12 +1,12 @@
-package com.skaliy.netty.server.modules;
+package com.skaliy.mobilecom.server.connection;
 
 import java.io.*;
 
-public class FileConnectionDB {
+public class DBConnectionFile {
 
     private File file;
 
-    public FileConnectionDB(String path) {
+    public DBConnectionFile(String path) {
         file = new File(path);
     }
 

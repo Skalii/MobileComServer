@@ -1,45 +1,42 @@
-package com.skaliy.netty.server.fxapp;
+package com.skaliy.mobilecom.server.fxapp;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXTextArea;
-import com.skaliy.netty.server.modules.FileConnectionDB;
-import com.skaliy.netty.ns.Server;
+import com.skaliy.mobilecom.server.connection.DBConnectionFile;
+import com.skaliy.mobilecom.server.server.Server;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 
-import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.sql.SQLException;
 
 public class Controller {
 
     @FXML
-    private JFXButton buttonStart;
+    private TextArea textAreaLogs;
 
     @FXML
     private Label labelStatus;
 
     @FXML
-    private JFXTextArea textAreaLogs;
+    private Button buttonStart;
 
     public void initialize() {
-
         final Server[] server = {null};
         final Thread[] thread = {null};
 
         buttonStart.setOnAction(event -> {
 
-            FileConnectionDB file = new FileConnectionDB("server.txt");
-            BufferedReader dataConnection = null;
+            DBConnectionFile file = new DBConnectionFile("db.txt");
+            BufferedReader dataConnection;
 
             try {
                 dataConnection = file.read();
             } catch (FileNotFoundException e) {
-                JOptionPane.showMessageDialog(
-                        JOptionPane.getRootFrame(),
-                        "Файл с параметрами подключения не существует!\n" +
-                                "Создайте файл \"server.txt\" со значениями host, user, password.");
+                textAreaLogs.appendText("Файл с параметрами подключения к БД не существует!\n" +
+                        "Создайте файл \"server.txt\" со значениями host, user, password.\n");
                 return;
             }
 
@@ -50,7 +47,9 @@ public class Controller {
                             dataConnection.readLine(),
                             dataConnection.readLine(),
                             dataConnection.readLine());
-                } catch (IOException e) {
+                } catch (IOException | SQLException | ClassNotFoundException e) {
+                    textAreaLogs.appendText("Упс! Что-то пошло не так.\n"
+                            + "Проверьте параметы подключения к БД в файле \"server.txt\"!\n");
                     server[0] = null;
                     return;
                 }
@@ -60,14 +59,19 @@ public class Controller {
                 thread[0] = new Thread(server[0]);
                 thread[0].start();
 
-
-                if (server[0].getDb().isConnected()) {
-                    labelStatus.setText("Подключение установлено!");
-                    buttonStart.setText("Отключить");
-                    textAreaLogs.appendText("[SERVER] - start\n");
-                } else {
-                    textAreaLogs.appendText("Упс! Возникла проблема.\n");
+                while (true) {
+                    if (server[0].getDb().isConnected())
+                        break;
+                    else try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
+
+                labelStatus.setText("Подключение установлено!");
+                buttonStart.setText("Отключить");
+                textAreaLogs.appendText("[SERVER] - start\n");
 
             } else {
                 server[0].getDb().closeConnection();
@@ -90,11 +94,7 @@ public class Controller {
                 thread[0].stop();
                 thread[0] = null;
             }
-            if (server[0] == null && thread[0] == null) {
-                textAreaLogs.appendText("[SERVER] - shutdown\n");
-            } else textAreaLogs.appendText("[SERVER] - did not shutdown\n");
         });
-
     }
 
 }
