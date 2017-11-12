@@ -63,7 +63,7 @@ public class Controller {
                     if (server[0].getDb().isConnected())
                         break;
                     else try {
-                        Thread.sleep(50);
+                        Thread.sleep(100);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }

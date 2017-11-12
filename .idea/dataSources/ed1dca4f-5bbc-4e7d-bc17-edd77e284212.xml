@@ -2694,7 +2694,7 @@
     </database>
     <schema id="898" parent="2" name="public">
       <ObjectId>2200</ObjectId>
-      <IntrospectionTimestamp>2017-11-12.15:25:29.968</IntrospectionTimestamp>
+      <IntrospectionTimestamp>2017-11-12.23:39:12.124</IntrospectionTimestamp>
       <IntrospectionStateNumber>64229017</IntrospectionStateNumber>
       <Current>1</Current>
       <Visible>1</Visible>
@@ -2714,21 +2714,21 @@
     <schema id="903" parent="2" name="information_schema">
       <ObjectId>13003</ObjectId>
     </schema>
-    <sequence id="904" parent="898" name="employees_id_employee_seq">
+    <sequence id="904" parent="898" name="news_id_news_seq">
+      <ObjectId>7003005</ObjectId>
+      <StateNumber>64218512</StateNumber>
+      <SequenceIdentity>1</SequenceIdentity>
+      <BelongsToColumn>1</BelongsToColumn>
+    </sequence>
+    <sequence id="905" parent="898" name="employees_id_employee_seq">
       <ObjectId>6949041</ObjectId>
       <StateNumber>61515383</StateNumber>
       <SequenceIdentity>1</SequenceIdentity>
       <BelongsToColumn>1</BelongsToColumn>
     </sequence>
-    <sequence id="905" parent="898" name="manufacturers_id_manufacturer_seq">
+    <sequence id="906" parent="898" name="manufacturers_id_manufacturer_seq">
       <ObjectId>6949066</ObjectId>
       <StateNumber>61515517</StateNumber>
-      <SequenceIdentity>1</SequenceIdentity>
-      <BelongsToColumn>1</BelongsToColumn>
-    </sequence>
-    <sequence id="906" parent="898" name="news_id_news_seq">
-      <ObjectId>7003005</ObjectId>
-      <StateNumber>64218512</StateNumber>
       <SequenceIdentity>1</SequenceIdentity>
       <BelongsToColumn>1</BelongsToColumn>
     </sequence>
