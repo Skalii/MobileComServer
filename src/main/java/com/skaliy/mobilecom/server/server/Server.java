@@ -50,79 +50,77 @@ public class Server implements Runnable {
         String _query = query;
         int index = 0;
 
-        if (_query.startsWith("get_category_")
-                || _query.startsWith("get_list_connects_")
-                || _query.startsWith("get_list_from_section_")
-                || _query.startsWith("get_category_from_")
-                || _query.startsWith("get_bookmarks_from_")
-                || _query.startsWith("get_bookmarks_ids_from_")) {
+        if (_query.startsWith("get_news_")
+//                || _query.startsWith("get_list_connects_")
+//                || _query.startsWith("get_list_from_section_")
+//                || _query.startsWith("get_category_from_")
+//                || _query.startsWith("get_bookmarks_from_")
+                /*|| _query.startsWith("get_bookmarks_ids_from_")*/) {
             index = Integer.parseInt(_query.substring(_query.lastIndexOf("_") + 1));
             _query = _query.substring(0, _query.lastIndexOf("_"));
         }
 
         switch (_query) {
 
-            case "get_sections":
-                result = db.query(true, "SELECT title from sections");
+            case "get_news":
+                result = db.query(true, "SELECT * FROM news ORDER BY id_news");
+                System.out.println(result[1][2]);
                 break;
 
-            case "get_category":
+            case "get_tariffs":
                 result = db.query(true,
-                        "SELECT c.title " +
-                                "FROM categories c, sections s " +
-                                "WHERE s.id_section = " + index +
-                                " AND c.id_category = ANY(s.ids_category)");
+                        "SELECT * FROM tariffs ORDER BY id_tariff");
                 break;
 
-            case "get_count_links":
+            /*case "get_count_links":
                 result = db.query(true, "SELECT count(link) FROM sites");
-                break;
+                break;*/
 
-            case "get_list_connects":
+            /*case "get_list_connects":
                 result = db.query(true,
                         "SELECT si.* " +
                                 "FROM sites si, sections se " +
                                 "WHERE se.id_section = " + index +
                                 " AND si.id_category = ANY(se.ids_category)");
-                break;
+                break;*/
 
-            case "get_list_from_section":
+            /*case "get_list_from_section":
                 result = db.query(true,
                         "SELECT si.* " +
                                 "FROM sites si, sections se " +
                                 "WHERE se.id_section = " + index +
                                 " AND si.id_category = ANY(se.ids_category)");
-                break;
+                break;*/
 
-            case "get_category_from":
+            /*case "get_category_from":
                 result = db.query(true,
                         "SELECT title " +
                                 "FROM categories " +
                                 "WHERE id_category = " + index);
-                break;
+                break;*/
 
-            case "get_logins_emails":
+           /* case "get_logins_emails":
                 result = db.query(true, "SELECT login, email FROM profiles");
-                break;
+                break;*/
 
-            case "get_profiles":
+            /*case "get_profiles":
                 result = db.query(true, "SELECT * FROM profiles");
-                break;
+                break;*/
 
-            case "get_bookmarks_from":
+            /*case "get_bookmarks_from":
                 result = db.query(true,
                         "SELECT s.link " +
                                 "FROM sites s, profiles p " +
                                 "WHERE p.id_profile = " + index +
                                 " AND s.id_site = ANY(p.ids_bookmark)");
-                break;
+                break;*/
 
-            case "get_bookmarks_ids_from":
+            /*case "get_bookmarks_ids_from":
                 result = db.query(true,
                         "SELECT ids_bookmark " +
                                 "FROM profiles " +
                                 "WHERE id_profile = " + index);
-                break;
+                break;*/
         }
 
         return result;
@@ -136,18 +134,17 @@ public class Server implements Runnable {
 
         switch (_query) {
 
-            case "add_profile":
+            case "add_news":
                 try {
                     db.query(false,
-                            "INSERT INTO profiles(login, password, last_name, first_name, email) " +
-                                    "VALUES('" + values[0] + "', '" + values[1] + "', '" +
-                                    values[2] + "', '" + values[3] + "', '" + values[4] + "')");
+                            "INSERT INTO news(title, content) " +
+                                    "VALUES('" + values[0] + "', '" + values[1] + "')");
                 } catch (SQLException e) {
                     result = false;
                 }
                 break;
 
-            case "add_bookmark":
+            /*case "add_bookmark":
                 try {
                     db.query(false,
                             "INSERT INTO bookmarks VALUES (" +
@@ -158,9 +155,9 @@ public class Server implements Runnable {
                 } catch (SQLException e) {
                     result = false;
                 }
-                break;
+                break;*/
 
-            case "delete_bookmark":
+            /*case "delete_bookmark":
                 try {
                     db.query(false,
                             "DELETE FROM bookmarks " +
@@ -171,7 +168,7 @@ public class Server implements Runnable {
                 } catch (SQLException e) {
                     result = false;
                 }
-                break;
+                break;*/
         }
 
         return result;

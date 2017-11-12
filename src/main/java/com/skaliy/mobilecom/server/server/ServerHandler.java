@@ -70,6 +70,7 @@ public class ServerHandler extends ChannelInboundMessageHandlerAdapter<String> {
                 if (channel == incoming) {
                     Server.addLog("[CLIENT] - " + incoming.remoteAddress() + " | query state: " + queryState);
                     Server.addLog("[CLIENT] - " + incoming.remoteAddress() + " | result size: " + quertResult.length);
+                    channel.write("[SERVER] - accepter the query: " + message + "\r\n");
                     channel.write("[SERVER] - result size: " + quertResult.length + "\r\n");
 
                     for (String[] record : quertResult) {
