@@ -86,6 +86,14 @@ public class Server implements Runnable {
             case "get_offers":
                 result = db.query(true, "SELECT * FROM offers ORDER BY id_offer");
                 break;
+
+            case "get_phones":
+                result = db.query(true,
+                        "SELECT p.id_phone, m.name, d.*, p.color, p.price, p.units " +
+                                "FROM phones p, manufacturers m, phone_details d " +
+                                "WHERE p.id_manufacturer = m.id_manufacturer " +
+                                "AND p.id_phone_detail = d.id_phone_detail");
+                break;
         }
 
         return result;
