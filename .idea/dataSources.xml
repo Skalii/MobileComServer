@@ -6,6 +6,7 @@
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
       <jdbc-url>jdbc:postgresql://ec2-79-125-13-42.eu-west-1.compute.amazonaws.com:5432/d81947dprpqjnd</jdbc-url>
+      <default-dialect>PostgreSQL</default-dialect>
       <driver-properties>
         <property name="ApplicationName" value="DataGrip" />
         <property name="sslfactory" value="org.postgresql.ssl.NonValidatingFactory" />

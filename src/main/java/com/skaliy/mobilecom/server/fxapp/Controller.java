@@ -24,6 +24,7 @@ public class Controller {
     private Button buttonStart;
 
     public void initialize() {
+
         final Server[] server = {null};
         final Thread[] thread = {null};
 

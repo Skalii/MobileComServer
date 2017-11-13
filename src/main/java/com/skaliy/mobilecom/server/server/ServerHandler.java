@@ -82,7 +82,9 @@ public class ServerHandler extends ChannelInboundMessageHandlerAdapter<String> {
                         for (int i = 0; i < record.length; i++) {
                             record[i] = record[i]
                                     .replaceAll("\n", "_p_")
-                                    .replaceAll(", ", "_c_");
+                                    .replaceAll(", ", "_c_")
+                                    .replace("{", "_bo_")
+                                    .replace("}", "_bc_");
                         }
 
                         channel.write(Arrays.toString(record) + "\r\n");

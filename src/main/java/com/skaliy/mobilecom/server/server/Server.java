@@ -48,12 +48,12 @@ public class Server implements Runnable {
         String[][] result = new String[0][];
 
         String _query = query;
-//        int index = 0;
+        int index = 0;
 
-//        if (_query.startsWith("get_news_")) {
-//            index = Integer.parseInt(_query.substring(_query.lastIndexOf("_") + 1));
-//            _query = _query.substring(0, _query.lastIndexOf("_"));
-//        }
+        if (_query.startsWith("get_tariff_")) {
+            index = Integer.parseInt(_query.substring(_query.lastIndexOf("_") + 1));
+            _query = _query.substring(0, _query.lastIndexOf("_"));
+        }
 
         switch (_query) {
 
@@ -61,8 +61,26 @@ public class Server implements Runnable {
                 result = db.query(true, "SELECT * FROM news ORDER BY id_news");
                 break;
 
+            case "get_tariff":
+                result = db.query(true,
+                        "SELECT id_tariff, title, price, description, " +
+                                "array(" +
+                                "   SELECT o.title " +
+                                "   FROM offers o, tariffs t " +
+                                "   WHERE t.id_tariff = " + index +
+                                "   AND o.id_offer = ANY (t.ids_offer) " +
+                                ") :: TEXT " +
+                                "FROM tariffs " +
+                                "WHERE id_tariff = " + index +
+                                "ORDER BY id_tariff;");
+                break;
+
             case "get_tariffs":
                 result = db.query(true, "SELECT * FROM tariffs");
+                break;
+
+            case "get_tariffs_count":
+                result = db.query(true, "SELECT COUNT(*) FROM tariffs");
                 break;
 
             case "get_offers":
