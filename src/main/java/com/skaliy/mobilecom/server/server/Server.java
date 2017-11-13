@@ -62,10 +62,12 @@ public class Server implements Runnable {
                 break;
 
             case "get_tariffs":
-                result = db.query(true,
-                        "SELECT * FROM tariffs ORDER BY id_tariff");
+                result = db.query(true, "SELECT * FROM tariffs");
                 break;
 
+            case "get_offers":
+                result = db.query(true, "SELECT * FROM offers ORDER BY id_offer");
+                break;
         }
 
         return result;
