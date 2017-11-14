@@ -31,7 +31,10 @@ public class ServerHandler extends ChannelInboundMessageHandlerAdapter<String> {
     public void messageReceived(final ChannelHandlerContext channelHandlerContext, String message) {
         Channel incoming = channelHandlerContext.channel();
 
-        message = message.replaceAll("_p_", "\n");
+        try {
+            message = message.replaceAll("_p_", "\n");
+        } catch (NullPointerException ignored) {
+        }
 
         if (message.startsWith("false") || message.startsWith("true")) {
 //            String bool = message.substring(0, message.indexOf(":")),
@@ -42,7 +45,11 @@ public class ServerHandler extends ChannelInboundMessageHandlerAdapter<String> {
             String[] values = message.substring(message.indexOf(",") + 1).split(",");
 
             for (int i = 0; i < values.length; i++) {
-                values[i] = values[i].replaceAll("_c_", ", ");
+                try {
+                    values[i] = values[i].replaceAll("_c_", ", ");
+                } catch (NullPointerException e) {
+                    values[i] = values[i];
+                }
             }
 
             boolean queryResult = Server.setResult(message, values);
@@ -80,13 +87,16 @@ public class ServerHandler extends ChannelInboundMessageHandlerAdapter<String> {
                         Server.addLog(Arrays.toString(record));
 
                         for (int i = 0; i < record.length; i++) {
-                            record[i] = record[i]
-                                    .replaceAll("\n", "_p_")
-                                    .replaceAll(", ", "_c_")
-                                    .replace("{", "_bo_")
-                                    .replace("}", "_bc_");
+                            try {
+                                record[i] = record[i]
+                                        .replaceAll("\n", "_p_")
+                                        .replaceAll(", ", "_c_")
+                                        .replace("{", "_bo_")
+                                        .replace("}", "_bc_");
+                            } catch (NullPointerException e) {
+                                record[i] = record[i];
+                            }
                         }
-
                         channel.write(Arrays.toString(record) + "\r\n");
                     }
                 }

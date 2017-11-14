@@ -13,7 +13,7 @@ import java.sql.SQLException;
 public class Server implements Runnable {
 
     private final int port;
-    static PostgreSQL db;
+    private static PostgreSQL db;
 
     @FXML
     private static TextArea textAreaLogs;
@@ -50,7 +50,8 @@ public class Server implements Runnable {
         String _query = query;
         int index = 0;
 
-        if (_query.startsWith("get_tariff_")) {
+        if (_query.startsWith("get_tariff_")
+                || _query.startsWith("get_phone_")) {
             index = Integer.parseInt(_query.substring(_query.lastIndexOf("_") + 1));
             _query = _query.substring(0, _query.lastIndexOf("_"));
         }
@@ -59,6 +60,10 @@ public class Server implements Runnable {
 
             case "get_news":
                 result = db.query(true, "SELECT * FROM news ORDER BY id_news");
+                break;
+
+            case "get_tariffs_count":
+                result = db.query(true, "SELECT COUNT(*) FROM tariffs");
                 break;
 
             case "get_tariff":
@@ -79,12 +84,12 @@ public class Server implements Runnable {
                 result = db.query(true, "SELECT * FROM tariffs");
                 break;
 
-            case "get_tariffs_count":
-                result = db.query(true, "SELECT COUNT(*) FROM tariffs");
-                break;
-
             case "get_offers":
                 result = db.query(true, "SELECT * FROM offers ORDER BY id_offer");
+                break;
+
+            case "get_phones_count":
+                result = db.query(true, "SELECT COUNT(*) FROM phones");
                 break;
 
             case "get_phones":

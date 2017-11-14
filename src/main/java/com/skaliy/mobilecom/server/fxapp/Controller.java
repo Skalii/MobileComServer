@@ -60,10 +60,8 @@ public class Controller {
                 thread[0] = new Thread(server[0]);
                 thread[0].start();
 
-                while (true) {
-                    if (server[0].getDb().isConnected())
-                        break;
-                    else try {
+                while (!server[0].getDb().isConnected()) {
+                    try {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
