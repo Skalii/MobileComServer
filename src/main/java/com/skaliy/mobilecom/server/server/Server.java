@@ -81,7 +81,7 @@ public class Server implements Runnable {
                 break;
 
             case "get_tariffs":
-                result = db.query(true, "SELECT * FROM tariffs");
+                result = db.query(true, "SELECT * FROM tariffs ORDER BY id_tariff");
                 break;
 
             case "get_offers":
@@ -97,7 +97,8 @@ public class Server implements Runnable {
                         "SELECT p.id_phone, m.name, d.*, p.color, p.price, p.units " +
                                 "FROM phones p, manufacturers m, phone_details d " +
                                 "WHERE p.id_manufacturer = m.id_manufacturer " +
-                                "AND p.id_phone_detail = d.id_phone_detail");
+                                "AND p.id_phone_detail = d.id_phone_detail " +
+                                "ORDER BY p.id_phone");
                 break;
         }
 
