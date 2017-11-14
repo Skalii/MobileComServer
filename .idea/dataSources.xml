@@ -13,5 +13,14 @@
         <property name="ssl" value="true" />
       </driver-properties>
     </data-source>
+    <data-source source="LOCAL" name="mobile_com@localhost" uuid="fc0d351b-2549-421f-9282-bd9916cf0bff">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:5432/mobile_com</jdbc-url>
+      <driver-properties>
+        <property name="ApplicationName" value="DataGrip" />
+      </driver-properties>
+    </data-source>
   </component>
 </project>
