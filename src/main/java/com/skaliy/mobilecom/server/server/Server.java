@@ -50,15 +50,15 @@ public class Server implements Runnable {
         String _query = query, parameter = "";
         int index = 0;
 
-        if (_query.startsWith("get_tariff_")
-                || _query.startsWith("get_phone_")) {
-            index = Integer.parseInt(_query.substring(_query.lastIndexOf("_") + 1));
-            _query = _query.substring(0, _query.lastIndexOf("_"));
-        }
-
-        if (_query.startsWith("get_id_employee-")) {
-            parameter = _query.substring(_query.lastIndexOf("-") + 1);
-            _query = _query.substring(0, _query.lastIndexOf("-"));
+        if (_query.startsWith("get_id_employee_p-")
+                || _query.startsWith("get_phone_p-")
+                || _query.startsWith("get_tariff_p-")
+                || _query.startsWith("get_offer_p-")) {
+            parameter = _query.substring(_query.lastIndexOf("_p-") + 3);
+            _query = _query.substring(0, _query.lastIndexOf("_p-") + 2);
+        } else if (_query.startsWith("get_tariff_i-")) {
+            index = Integer.parseInt(_query.substring(_query.lastIndexOf("_i-") + 3));
+            _query = _query.substring(0, _query.lastIndexOf("_i-") + 2);
         }
 
         switch (_query) {
@@ -67,11 +67,20 @@ public class Server implements Runnable {
                 result = db.query(true, "SELECT * FROM news ORDER BY id_news");
                 break;
 
-            case "get_tariffs_count":
-                result = db.query(true, "SELECT COUNT(*) FROM tariffs");
+            case "get_offers":
+                result = db.query(true, "SELECT * FROM offers ORDER BY id_offer");
                 break;
 
-            case "get_tariff":
+            case "get_phones":
+                result = db.query(true,
+                        "SELECT p.id_phone, m.name, d.*, p.color, p.price, p.units " +
+                                "FROM phones p, manufacturers m, phone_details d " +
+                                "WHERE p.id_manufacturer = m.id_manufacturer " +
+                                "AND p.id_phone_detail = d.id_phone_detail " +
+                                "ORDER BY p.id_phone");
+                break;
+
+            case "get_tariff_i":
                 result = db.query(true,
                         "SELECT id_tariff, title, price, description, " +
                                 "array(" +
@@ -85,38 +94,67 @@ public class Server implements Runnable {
                                 "ORDER BY id_tariff;");
                 break;
 
-            case "get_tariffs":
-                result = db.query(true, "SELECT * FROM tariffs ORDER BY id_tariff");
-                break;
-
-            case "get_offers":
-                result = db.query(true, "SELECT * FROM offers ORDER BY id_offer");
+            case "get_tariffs_count":
+                result = db.query(true, "SELECT COUNT(*) FROM tariffs");
                 break;
 
             case "get_phones_count":
                 result = db.query(true, "SELECT COUNT(*) FROM phones");
                 break;
 
-            case "get_phones":
-                result = db.query(true,
-                        "SELECT p.id_phone, m.name, d.*, p.color, p.price, p.units " +
-                                "FROM phones p, manufacturers m, phone_details d " +
-                                "WHERE p.id_manufacturer = m.id_manufacturer " +
-                                "AND p.id_phone_detail = d.id_phone_detail " +
-                                "ORDER BY p.id_phone");
-                break;
 
             case "get_employees_name":
                 result = db.query(true, "SELECT name FROM employees ORDER BY id_employee");
                 break;
 
-            case "get_id_employee":
+            case "get_last_sale":
+                result = db.query(true, "SELECT MAX(id_sale) FROM sales");
+                break;
+
+            case "get_id_employee_p":
                 result = db.query(true,
                         "SELECT id_employee FROM employees WHERE name = '" + parameter + "'");
                 break;
 
-            case "get_last_sale":
-                result = db.query(true, "SELECT MAX(id_sale) FROM sales");
+            case "get_phone_p":
+                result = db.query(true,
+                        "SELECT p.id_phone, m.name, d.*, p.color, p.price, p.units " +
+                                "FROM phones p, manufacturers m, phone_details d " +
+                                "WHERE p.id_manufacturer = m.id_manufacturer " +
+                                "AND p.id_phone_detail = d.id_phone_detail " +
+                                "AND (LOWER(m.name) LIKE LOWER('%" + parameter + "%') " +
+                                "OR LOWER(p.color) LIKE LOWER('%" + parameter + "%') " +
+                                "OR LOWER(d.model) LIKE LOWER('%" + parameter + "%') " +
+                                "OR LOWER(d.os) LIKE LOWER('%" + parameter + "%') " +
+                                "OR LOWER(d.processor) LIKE LOWER('%" + parameter + "%') " +
+                                "OR LOWER(d.resolution) LIKE LOWER('%" + parameter + "%') " +/*
+                                (parameter.matches("^\\d*$") || parameter.contains(".")
+                                        ? "OR p.price = " + parameter +
+                                        "OR d.ram = " + parameter +
+                                        "OR d.rom = " + parameter +
+                                        "OR d.batary = " + parameter +
+                                        "OR d.diagonal = " + parameter +
+                                        "OR d.camera_main = " + parameter +
+                                        "OR d.camera_main_two = " + parameter +
+                                        "OR d.camera_front = " + parameter
+                                        : "")
+                                + */") ORDER BY p.id_phone");
+                break;
+
+            case "get_tariff_p":
+                result = db.query(true,
+                        "SELECT id_tariff, title, price, description, " +
+                                "array(" +
+                                "   SELECT o.title " +
+                                "   FROM offers o, tariffs t " +
+                                "   WHERE (LOWER(t.title) LIKE LOWER('%" + parameter + "%') " +
+                                "   OR LOWER(t.description) LIKE LOWER('%" + parameter + "%'))" +
+                                "   AND o.id_offer = ANY (t.ids_offer) " +
+                                ") :: TEXT " +
+                                "FROM tariffs " +
+                                "WHERE LOWER(title) LIKE LOWER('%" + parameter + "%') " +
+                                "OR LOWER(description) LIKE LOWER('%" + parameter + "%') " +
+                                "ORDER BY id_tariff;");
                 break;
 
         }

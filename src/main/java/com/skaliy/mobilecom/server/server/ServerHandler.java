@@ -71,7 +71,11 @@ public class ServerHandler extends ChannelInboundMessageHandlerAdapter<String> {
 
             try {
                 quertResult = Server.getResult(message);
-            } catch (SQLException e) {
+                if (quertResult.length == 0) {
+                    quertResult = new String[][]{{null}};
+                    queryState = "null";
+                }
+            } catch (SQLException | ArrayIndexOutOfBoundsException e) {
                 quertResult = new String[][]{{null}};
                 queryState = "false";
             }
