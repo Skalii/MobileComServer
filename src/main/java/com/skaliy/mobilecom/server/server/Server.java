@@ -48,17 +48,24 @@ public class Server implements Runnable {
         String[][] result = new String[0][];
 
         String _query = query, parameter = "";
+        String[] parameters = new String[0];
         int index = 0;
 
         if (_query.startsWith("get_id_employee_p-")
                 || _query.startsWith("get_phone_p-")
+                || _query.startsWith("get_phone_c-")
                 || _query.startsWith("get_tariff_p-")
                 || _query.startsWith("get_offer_p-")) {
             parameter = _query.substring(_query.lastIndexOf("_p-") + 3);
             _query = _query.substring(0, _query.lastIndexOf("_p-") + 2);
+
         } else if (_query.startsWith("get_tariff_i-")) {
             index = Integer.parseInt(_query.substring(_query.lastIndexOf("_i-") + 3));
             _query = _query.substring(0, _query.lastIndexOf("_i-") + 2);
+
+        } else if (_query.startsWith("get_phone_c-")) {
+            parameters = _query.substring(_query.lastIndexOf("_c-") + 3).split(";");
+            _query = _query.substring(0, _query.lastIndexOf("_c-") + 2);
         }
 
         switch (_query) {
@@ -100,11 +107,6 @@ public class Server implements Runnable {
 
             case "get_phones_count":
                 result = db.query(true, "SELECT COUNT(*) FROM phones");
-                break;
-
-
-            case "get_employees_name":
-                result = db.query(true, "SELECT name FROM employees ORDER BY id_employee");
                 break;
 
             case "get_last_sale":
@@ -155,6 +157,54 @@ public class Server implements Runnable {
                                 "WHERE LOWER(title) LIKE LOWER('%" + parameter + "%') " +
                                 "OR LOWER(description) LIKE LOWER('%" + parameter + "%') " +
                                 "ORDER BY id_tariff;");
+                break;
+
+            case "get_offer_p":
+                result = db.query(true,
+                        "SELECT * FROM offers " +
+                                "WHERE LOWER(title) LIKE LOWER('%" + parameter + "%') " +
+                                "OR LOWER(description) LIKE LOWER('%" + parameter + "%')");
+                break;
+
+            case "get_phone_c":
+
+                String _query_ = "SELECT p.id_phone, m.name, d.*, p.color, p.price, p.units " +
+                        "FROM phones p, manufacturers m, phone_details d " +
+                        "WHERE p.id_manufacturer = m.id_manufacturer " +
+                        "AND p.id_phone_detail = d.id_phone_detail";
+
+                _query_ = _query_.concat(" AND (");
+
+                for (int i = 0; i < parameters.length; i++) {
+                    if (parameters[i].startsWith("Производитель")) {
+                        parameters[i] = parameters[i].replace("Производитель", "m.name");
+                        // TODO: 16.11.2017 ADDS ALL PARAMETERS
+                    }
+                }
+
+                _query_ = _query_.concat(")");
+
+                result = db.query(true, _query_);
+                break;
+
+            case "get_employees_names":
+                result = db.query(true, "SELECT name FROM employees ORDER BY id_employee");
+                break;
+
+            case "get_manufacturers_names":
+                result = db.query(true, "SELECT name FROM manufacturers ORDER BY id_manufacturer");
+                break;
+
+            case "get_phones_colors":
+                result = db.query(true, "SELECT color FROM phones ORDER BY id_phone");
+                break;
+
+            case "get_pd_os":
+                result = db.query(true, "SELECT os FROM phone_details ORDER BY id_phone_detail");
+                break;
+
+            case "get_pd_ram":
+                result = db.query(true, "SELECT ram FROM phone_details ORDER BY id_phone_detail");
                 break;
 
         }
