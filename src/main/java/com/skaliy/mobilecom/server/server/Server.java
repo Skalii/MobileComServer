@@ -7,6 +7,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
+import org.codehaus.plexus.util.StringUtils;
 
 import java.sql.SQLException;
 
@@ -53,7 +54,6 @@ public class Server implements Runnable {
 
         if (_query.startsWith("get_id_employee_p-")
                 || _query.startsWith("get_phone_p-")
-                || _query.startsWith("get_phone_c-")
                 || _query.startsWith("get_tariff_p-")
                 || _query.startsWith("get_offer_p-")) {
             parameter = _query.substring(_query.lastIndexOf("_p-") + 3);
@@ -63,7 +63,9 @@ public class Server implements Runnable {
             index = Integer.parseInt(_query.substring(_query.lastIndexOf("_i-") + 3));
             _query = _query.substring(0, _query.lastIndexOf("_i-") + 2);
 
-        } else if (_query.startsWith("get_phone_c-")) {
+        } else if (_query.startsWith("get_phone_c-")
+                || _query.startsWith("get_tariff_c-")
+                || _query.startsWith("get_offer_c-")) {
             parameters = _query.substring(_query.lastIndexOf("_c-") + 3).split(";");
             _query = _query.substring(0, _query.lastIndexOf("_c-") + 2);
         }
@@ -98,7 +100,7 @@ public class Server implements Runnable {
                                 ") :: TEXT " +
                                 "FROM tariffs " +
                                 "WHERE id_tariff = " + index +
-                                "ORDER BY id_tariff;");
+                                "ORDER BY id_tariff");
                 break;
 
             case "get_tariffs_count":
@@ -166,45 +168,164 @@ public class Server implements Runnable {
                                 "OR LOWER(description) LIKE LOWER('%" + parameter + "%')");
                 break;
 
+            case "get_offer_c":
+
+                for (int i = 0; i < parameters.length; i++) {
+                    if (parameters[i].startsWith("Название услуги")) {
+                        parameters[i] = parameters[i].replace("Название услуги", "title");
+                    }
+                }
+
+                result = db.query(true,
+                        "SELECT * FROM offers " +
+                                "WHERE " + StringUtils.join(parameters, " AND ") +
+                                " ORDER BY id_offer");
+                break;
+
+            case "get_tariff_c":
+
+                for (int i = 0; i < parameters.length; i++) {
+                    if (parameters[i].startsWith("Название тарифа")) {
+                        parameters[i] = parameters[i].replace("Название тарифа", "t.title");
+                    }
+                }
+
+                result = db.query(true,
+                        "SELECT t.id_tariff, t.title, t.price, t.description, " +
+                                "array(" +
+                                "   SELECT o.title " +
+                                "   FROM offers o, tariffs t " +
+                                "   WHERE " + StringUtils.join(parameters, " AND ") +
+                                "   AND o.id_offer = ANY (t.ids_offer) " +
+                                ") :: TEXT " +
+                                "FROM tariffs t " +
+                                "WHERE " + StringUtils.join(parameters, " AND ") +
+                                "ORDER BY t.id_tariff");
+                break;
+
             case "get_phone_c":
-
-                String _query_ = "SELECT p.id_phone, m.name, d.*, p.color, p.price, p.units " +
-                        "FROM phones p, manufacturers m, phone_details d " +
-                        "WHERE p.id_manufacturer = m.id_manufacturer " +
-                        "AND p.id_phone_detail = d.id_phone_detail";
-
-                _query_ = _query_.concat(" AND (");
 
                 for (int i = 0; i < parameters.length; i++) {
                     if (parameters[i].startsWith("Производитель")) {
                         parameters[i] = parameters[i].replace("Производитель", "m.name");
-                        // TODO: 16.11.2017 ADDS ALL PARAMETERS
+                    } else if (parameters[i].startsWith("Цвет")) {
+                        parameters[i] = parameters[i].replace("Цвет", "p.color");
+                    } else if (parameters[i].startsWith("ОС")) {
+                        parameters[i] = parameters[i].replace("ОС", "d.os");
+                    } else if (parameters[i].startsWith("Оперативная память")) {
+                        parameters[i] = parameters[i].replace("Оперативная память", "d.ram");
+                    } else if (parameters[i].startsWith("Встроенная память")) {
+                        parameters[i] = parameters[i].replace("Встроенная память", "d.rom");
+                    } else if (parameters[i].startsWith("Карта памяти")) {
+                        parameters[i] = parameters[i]
+                                .replace("Карта памяти", "d.memory_card")
+                                .replace("Поддерживает", "t")
+                                .replace("Не поддерживает", "f");
+                    } else if (parameters[i].startsWith("Количество SIM-карт")) {
+                        parameters[i] = parameters[i].replace("Количество SIM-карт", "d.simcard_quant");
+                    } else if (parameters[i].startsWith("Процессор")) {
+                        parameters[i] = parameters[i].replace("Процессор", "d.processor");
+                    } else if (parameters[i].startsWith("Батарея")) {
+                        parameters[i] = parameters[i].replace("Батарея", "d.batary");
+                    } else if (parameters[i].startsWith("Диагональ")) {
+                        parameters[i] = parameters[i].replace("Диагональ", "d.diagonal");
+                    } else if (parameters[i].startsWith("Разрешение")) {
+                        parameters[i] = parameters[i].replace("Разрешение", "d.resolution");
+                    } else if (parameters[i].startsWith("Основная камера")) {
+                        parameters[i] = parameters[i].replace("Основная камера", "d.camera_main");
+                    } else if (parameters[i].startsWith("Фронтальная камера")) {
+                        parameters[i] = parameters[i].replace("Фронтальная камера", "d.camera_front");
                     }
                 }
 
-                _query_ = _query_.concat(")");
-
-                result = db.query(true, _query_);
+                result = db.query(true,
+                        "SELECT p.id_phone, m.name, d.*, p.color, p.price, p.units " +
+                                "FROM phones p, manufacturers m, phone_details d " +
+                                "WHERE p.id_manufacturer = m.id_manufacturer " +
+                                "AND p.id_phone_detail = d.id_phone_detail " +
+                                "AND (" + StringUtils.join(parameters, " AND ") +
+                                ") ORDER BY p.id_phone");
                 break;
 
-            case "get_employees_names":
-                result = db.query(true, "SELECT name FROM employees ORDER BY id_employee");
+            case "get_e_names":
+                result = db.query(true, "SELECT name FROM employees ORDER BY name");
                 break;
 
-            case "get_manufacturers_names":
-                result = db.query(true, "SELECT name FROM manufacturers ORDER BY id_manufacturer");
+            case "get_m_names":
+                result = db.query(true, "SELECT name FROM manufacturers ORDER BY name");
                 break;
 
             case "get_phones_colors":
-                result = db.query(true, "SELECT color FROM phones ORDER BY id_phone");
+                result = db.query(true, "SELECT DISTINCT color FROM phones ORDER BY color");
                 break;
 
             case "get_pd_os":
-                result = db.query(true, "SELECT os FROM phone_details ORDER BY id_phone_detail");
+                result = db.query(true, "SELECT DISTINCT os FROM phone_details ORDER BY os");
                 break;
 
             case "get_pd_ram":
-                result = db.query(true, "SELECT ram FROM phone_details ORDER BY id_phone_detail");
+                result = db.query(true, "SELECT DISTINCT ram FROM phone_details ORDER BY ram");
+                break;
+
+            case "get_pd_rom":
+                result = db.query(true, "SELECT DISTINCT rom FROM phone_details ORDER BY rom");
+                break;
+
+            case "get_pd_memory_card":
+                result = db.query(true, "SELECT DISTINCT memory_card FROM phone_details ORDER BY memory_card");
+                for (int i = 0; i < result.length; i++) {
+                    result[i][0] = result[i][0]
+                            .replace("t", "Поддерживает")
+                            .replace("f", "Не поддерживает");
+                }
+                break;
+
+            case "get_pd_sim":
+                result = db.query(true, "SELECT DISTINCT simcard_quant FROM phone_details ORDER BY simcard_quant");
+                break;
+
+            case "get_pd_processor":
+                result = db.query(true, "SELECT DISTINCT processor FROM phone_details ORDER BY processor");
+                break;
+
+            case "get_pd_batary":
+                result = db.query(true, "SELECT DISTINCT batary FROM phone_details ORDER BY batary");
+                break;
+
+            case "get_pd_diagonal":
+                result = db.query(true, "SELECT DISTINCT diagonal FROM phone_details ORDER BY diagonal");
+
+                for (int i = 0; i < result.length; i++) {
+                    result[i][0] = String.valueOf(Float.parseFloat(result[i][0]));
+                }
+                break;
+
+            case "get_pd_resolution":
+                result = db.query(true, "SELECT DISTINCT resolution FROM phone_details ORDER BY resolution");
+                break;
+
+            case "get_pd_camera_main":
+                result = db.query(true, "SELECT DISTINCT camera_main FROM phone_details ORDER BY camera_main");
+
+                for (int i = 0; i < result.length; i++) {
+                    result[i][0] = String.valueOf(Float.parseFloat(result[i][0]));
+                }
+                break;
+
+            case "get_pd_camera_front":
+                result = db.query(true, "SELECT DISTINCT camera_front FROM phone_details ORDER BY camera_front");
+
+                for (int i = 0; i < result.length; i++) {
+                    result[i][0] = String.valueOf(Float.parseFloat(result[i][0]));
+                }
+                break;
+
+            case "get_tariffs_title":
+                result = db.query(true, "SELECT DISTINCT title FROM tariffs ORDER BY title");
+                break;
+
+            case "get_offers_title":
+                result = db.query(true, "SELECT DISTINCT title FROM offers ORDER BY title");
                 break;
 
         }
