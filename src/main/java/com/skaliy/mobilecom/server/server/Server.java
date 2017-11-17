@@ -385,6 +385,16 @@ public class Server implements Runnable {
                 } catch (SQLException e) {
                     result = false;
                 }
+                break;
+
+            case "add_union_tariff":
+                try {
+                    db.query(false, "INSERT INTO union_sales_tariffs " +
+                            "VALUES (" + values[0] + ", " + values[1] + ", " + values[2] + ")");
+                } catch (SQLException e) {
+                    result = false;
+                }
+                break;
         }
 
         return result;
