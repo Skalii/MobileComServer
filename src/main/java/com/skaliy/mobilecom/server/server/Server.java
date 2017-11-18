@@ -76,17 +76,41 @@ public class Server implements Runnable {
                 result = db.query(true, "SELECT * FROM news ORDER BY id_news");
                 break;
 
+            case "get_employees":
+                result = db.query(true, "SELECT * FROM employees ORDER BY id_employee");
+                break;
+
             case "get_offers":
                 result = db.query(true, "SELECT * FROM offers ORDER BY id_offer");
                 break;
 
+            case "get_manufacturers":
+                result = db.query(true, "SELECT * FROM manufacturers ORDER BY id_manufacturer");
+                break;
+
             case "get_phones":
                 result = db.query(true,
-                        "SELECT p.id_phone, m.name, d.*, p.color, p.price, p.units " +
+                        "SELECT p.id_phone, m.name, d.model, d.os, d.ram, d.rom, d.memory_card, " +
+                                "d.simcard_quant, d.processor, d.batary, d.diagonal, d.resolution, " +
+                                "d.camera_main, d.camera_main_two, d.camera_front, p.color, p.price, p.units " +
                                 "FROM phones p, manufacturers m, phone_details d " +
                                 "WHERE p.id_manufacturer = m.id_manufacturer " +
                                 "AND p.id_phone_detail = d.id_phone_detail " +
                                 "ORDER BY p.id_phone");
+                for (int i = 0; i < result.length; i++) {
+                    result[i][6] = result[i][6]
+                            .replace("t", "Поддерживает")
+                            .replace("f", "Не поддерживает");
+                    result[i][10] = String.valueOf(Float.parseFloat(result[i][10]));
+                    result[i][12] = String.valueOf(Float.parseFloat(result[i][12]));
+                    try {
+                        result[i][13] = String.valueOf(Float.parseFloat(result[i][13]));
+                    } catch (NullPointerException e) {
+                        result[i][13] = "Нет";
+                    }
+                    result[i][14] = String.valueOf(Float.parseFloat(result[i][14]));
+
+                }
                 break;
 
             case "get_tariff_i":
@@ -117,12 +141,17 @@ public class Server implements Runnable {
 
             case "get_id_employee_p":
                 result = db.query(true,
-                        "SELECT id_employee FROM employees WHERE name = '" + parameter + "'");
+                        "SELECT id_employee " +
+                                "FROM employees " +
+                                "WHERE name = '" + parameter + "' " +
+                                "ORDER BY id_employee");
                 break;
 
             case "get_phone_p":
                 result = db.query(true,
-                        "SELECT p.id_phone, m.name, d.*, p.color, p.price, p.units " +
+                        "SELECT p.id_phone, m.name, d.model, d.os, d.ram, d.rom, d.memory_card, " +
+                                "d.simcard_quant, d.processor, d.batary, d.diagonal, d.resolution, d.camera_main, " +
+                                "d.camera_main_two, d.camera_front, p.color, p.price, p.units " +
                                 "FROM phones p, manufacturers m, phone_details d " +
                                 "WHERE p.id_manufacturer = m.id_manufacturer " +
                                 "AND p.id_phone_detail = d.id_phone_detail " +
@@ -143,6 +172,12 @@ public class Server implements Runnable {
                                         "OR d.camera_front = " + parameter
                                         : "")
                                 + */") ORDER BY p.id_phone");
+
+                for (int i = 0; i < result.length; i++) {
+                    result[i][6] = result[i][6]
+                            .replace("t", "Поддерживает")
+                            .replace("f", "Не поддерживает");
+                }
                 break;
 
             case "get_tariff_p":
@@ -165,7 +200,8 @@ public class Server implements Runnable {
                 result = db.query(true,
                         "SELECT * FROM offers " +
                                 "WHERE LOWER(title) LIKE LOWER('%" + parameter + "%') " +
-                                "OR LOWER(description) LIKE LOWER('%" + parameter + "%')");
+                                "OR LOWER(description) LIKE LOWER('%" + parameter + "%') " +
+                                "ORDER BY id_offer");
                 break;
 
             case "get_offer_c":
@@ -200,7 +236,7 @@ public class Server implements Runnable {
                                 ") :: TEXT " +
                                 "FROM tariffs t " +
                                 "WHERE " + StringUtils.join(parameters, " AND ") +
-                                "ORDER BY t.id_tariff");
+                                " ORDER BY t.id_tariff");
                 break;
 
             case "get_phone_c":
@@ -239,12 +275,20 @@ public class Server implements Runnable {
                 }
 
                 result = db.query(true,
-                        "SELECT p.id_phone, m.name, d.*, p.color, p.price, p.units " +
+                        "SELECT p.id_phone, m.name, d.model, d.os, d.ram, d.rom, d.memory_card, " +
+                                "d.simcard_quant, d.processor, d.batary, d.diagonal, d.resolution, d.camera_main, " +
+                                "d.camera_main_two, d.camera_front, p.color, p.price, p.units " +
                                 "FROM phones p, manufacturers m, phone_details d " +
                                 "WHERE p.id_manufacturer = m.id_manufacturer " +
                                 "AND p.id_phone_detail = d.id_phone_detail " +
                                 "AND (" + StringUtils.join(parameters, " AND ") +
                                 ") ORDER BY p.id_phone");
+
+                for (int i = 0; i < result.length; i++) {
+                    result[i][6] = result[i][6]
+                            .replace("t", "Поддерживает")
+                            .replace("f", "Не поддерживает");
+                }
                 break;
 
             case "get_e_names":
