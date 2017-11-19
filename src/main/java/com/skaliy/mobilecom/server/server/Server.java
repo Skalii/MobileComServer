@@ -10,6 +10,7 @@ import javafx.scene.control.TextArea;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.sql.SQLException;
+import java.util.Objects;
 
 public class Server implements Runnable {
 
@@ -50,7 +51,7 @@ public class Server implements Runnable {
 
         String _query = query, parameter = "";
         String[] parameters = new String[0];
-        int index = 0;
+//        int index = 0;
 
         if (_query.startsWith("get_id_employee_p-")
                 || _query.startsWith("get_phone_p-")
@@ -59,9 +60,11 @@ public class Server implements Runnable {
             parameter = _query.substring(_query.lastIndexOf("_p-") + 3);
             _query = _query.substring(0, _query.lastIndexOf("_p-") + 2);
 
-        } else if (_query.startsWith("get_tariff_i-")) {
-            index = Integer.parseInt(_query.substring(_query.lastIndexOf("_i-") + 3));
-            _query = _query.substring(0, _query.lastIndexOf("_i-") + 2);
+//        } else if (_query.startsWith("get_tariff_i-")
+//                || _query.startsWith("get_sale_phones_i-")
+//                || _query.startsWith("get_sales_phones_all_i-")) {
+//            index = Integer.parseInt(_query.substring(_query.lastIndexOf("_i-") + 3));
+//            _query = _query.substring(0, _query.lastIndexOf("_i-") + 2);
 
         } else if (_query.startsWith("get_phone_c-")
                 || _query.startsWith("get_tariff_c-")
@@ -78,6 +81,12 @@ public class Server implements Runnable {
 
             case "get_employees":
                 result = db.query(true, "SELECT * FROM employees ORDER BY id_employee");
+
+                for (int i = 0; i < result.length; i++) {
+                    result[i][7] = result[i][7]
+                            .replace(" ?", "");
+                }
+
                 break;
 
             case "get_offers":
@@ -109,30 +118,140 @@ public class Server implements Runnable {
                         result[i][13] = "Нет";
                     }
                     result[i][14] = String.valueOf(Float.parseFloat(result[i][14]));
-
                 }
                 break;
 
-            case "get_tariff_i":
+            case "get_sales":
+                result = new String[Integer.parseInt(db.query(true,
+                        "SELECT count(*) FROM sales")[0][0])][12];
+
+                int isNull = Integer.parseInt(db.query(true,
+                        "SELECT count(*) FROM sales WHERE id_employee IS NULL")[0][0]);
+
+                String[][] idsSales = db.query(true, "SELECT id_sale FROM sales ORDER BY id_sale");
+                for (int i = 0; i < isNull; i++) {
+                    result[i] = db.query(true,
+                            "SELECT id_sale, date_sale, amount, id_employee, is_sold, " +
+                                    "client_name, client_pnumber, client_email, " +
+                                    "array(" +
+                                    "   SELECT concat(m.name, ' ', pd.model) " +
+                                    "   FROM phones p, phone_details pd, manufacturers m, sales s " +
+                                    "   WHERE p.id_phone_detail = pd.id_phone_detail " +
+                                    "   AND p.id_manufacturer = m.id_manufacturer " +
+                                    "   AND s.id_sale = " + idsSales[i][0] +
+                                    "   AND p.id_phone = ANY (s.ids_phones)) :: TEXT, " +
+                                    "units_phones, " +
+                                    "array(" +
+                                    "   SELECT t.title " +
+                                    "   FROM tariffs t, sales s " +
+                                    "   WHERE s.id_sale = " + idsSales[i][0] +
+                                    "   AND t.id_tariff = ANY (s.ids_tariffs)) :: TEXT, " +
+                                    "units_tariffs " +
+                                    "FROM sales " +
+                                    "WHERE id_employee IS NULL " +
+                                    "AND id_sale = " + idsSales[i][0])[0];
+                }
+                for (int i = isNull; i < result.length; i++) {
+                    result[i] = db.query(true,
+                            "SELECT s.id_sale, s.date_sale, s.amount, e.name, s.is_sold, " +
+                                    "s.client_name, s.client_pnumber, s.client_email, " +
+                                    "array(" +
+                                    "   SELECT concat(m.name, ' ', pd.model) " +
+                                    "   FROM phones p, phone_details pd, manufacturers m, sales s " +
+                                    "   WHERE p.id_phone_detail = pd.id_phone_detail " +
+                                    "   AND p.id_manufacturer = m.id_manufacturer " +
+                                    "   AND s.id_sale = " + idsSales[i][0] +
+                                    "   AND p.id_phone = ANY (s.ids_phones)) :: TEXT, " +
+                                    "s.units_phones, " +
+                                    "array(" +
+                                    "   SELECT t.title " +
+                                    "   FROM tariffs t, sales s " +
+                                    "   WHERE s.id_sale = " + idsSales[i][0] +
+                                    "   AND t.id_tariff = ANY (s.ids_tariffs)) :: TEXT, " +
+                                    "s.units_tariffs " +
+                                    "FROM sales s, employees e " +
+                                    "WHERE s.id_employee = e.id_employee " +
+                                    "AND s.id_sale = " + idsSales[i][0])[0];
+                }
+                for (int i = 0; i < result.length; i++) {
+                    result[i][4] = result[i][4]
+                            .replace("t", "Продано")
+                            .replace("f", "Заказ");
+                }
+                break;
+
+            /*case "get_sale_phones":
                 result = db.query(true,
-                        "SELECT id_tariff, title, price, description, " +
-                                "array(" +
-                                "   SELECT o.title " +
-                                "   FROM offers o, tariffs t " +
-                                "   WHERE t.id_tariff = " + index +
-                                "   AND o.id_offer = ANY (t.ids_offer) " +
+                        "SELECT u.id_sale, concat(m.name, ' ', pd.model) " +
+                                "FROM union_sales_phones u, phones p, phone_details pd, manufacturers m, sales s " +
+                                "WHERE u.id_phone = p.id_phone " +
+                                "AND p.id_manufacturer = m.id_manufacturer " +
+                                "AND p.id_phone_detail = pd.id_phone_detail " +
+                                "AND s.id_sale = u.id_sale " +
+                                "AND s.id_sale = " + index);
+                break;*/
+
+            /*case "get_names_phones":
+                result = db.query(true,
+                        "SELECT concat(m.name, ' ', pd.model) " +
+                                "FROM phones p, phone_details pd, manufacturers m " +
+                                "WHERE p.id_manufacturer = m.id_manufacturer " +
+                                "AND p.id_phone_detail = pd.id_phone_detail " +
+                                "ORDER BY p.id_phone");
+                break;*/
+
+            /*case "get_sales_phones_all":
+                result = db.query(true,
+                        "SELECT id_sale, array(" +
+                                "   SELECT concat(m.name, ' ', pd.model) " +
+                                "   FROM phones p, phone_details pd, manufacturers m, sales s " +
+                                "   WHERE p.id_phone_detail = pd.id_phone_detail " +
+                                "   AND p.id_manufacturer = m.id_manufacturer " +
+                                "   AND p.id_phone = ANY (s.ids_phones) " +
+                                "   AND s.id_sale = " + index +
                                 ") :: TEXT " +
-                                "FROM tariffs " +
-                                "WHERE id_tariff = " + index +
-                                "ORDER BY id_tariff");
-                break;
+                                "FROM sales " +
+                                "WHERE id_sale = " + index);
 
-            case "get_tariffs_count":
-                result = db.query(true, "SELECT COUNT(*) FROM tariffs");
-                break;
+                *//*result =
+                        new String[Integer.parseInt(
+                                db.query(true, "SELECT count(id_sale) FROM sales")[0][0])][2];
 
-            case "get_phones_count":
-                result = db.query(true, "SELECT COUNT(*) FROM phones");
+                for (int i = 0; i < result.length; i++) {
+                    result[i][0] = db.query(true, "SELECT id_sale FROM sales ORDER BY id_sale")[i][0];
+                    result[i] = db.query(true,
+                            "SELECT id_sale, array(" +
+                                    "   SELECT concat(m.name, ' ', pd.model) " +
+                                    "   FROM phones p, phone_details pd, manufacturers m, sales s " +
+                                    "   WHERE p.id_phone_detail = pd.id_phone_detail " +
+                                    "   AND p.id_manufacturer = m.id_manufacturer " +
+                                    "   AND p.id_phone = ANY (s.ids_phones) " +
+                                    "   AND s.id_sale = " + Integer.parseInt(result[i][0]) +
+                                    ") :: TEXT " +
+                                    "FROM sales " +
+                                    "WHERE id_sale = " + Integer.parseInt(result[i][0]))[0];
+                }*//*
+                break;*/
+
+            case "get_tariffs":
+                result = new String[Integer.parseInt(
+                        db.query(true, "SELECT COUNT(*) FROM tariffs")[0][0])][5];
+
+                for (int i = 0; i < result.length; i++) {
+                    result[i][0] = db.query(true,
+                            "SELECT id_tariff FROM tariffs ORDER BY id_tariff")[i][0];
+                    result[i] = db.query(true,
+                            "SELECT id_tariff, title, price, description, " +
+                                    "array(" +
+                                    "   SELECT o.title " +
+                                    "   FROM offers o, tariffs t " +
+                                    "   WHERE t.id_tariff = " + result[i][0] +
+                                    "   AND o.id_offer = ANY (t.ids_offer) " +
+                                    ") :: TEXT " +
+                                    "FROM tariffs " +
+                                    "WHERE id_tariff = " + result[i][0] +
+                                    " ORDER BY id_tariff")[0];
+                }
                 break;
 
             case "get_last_sale":
@@ -291,11 +410,11 @@ public class Server implements Runnable {
                 }
                 break;
 
-            case "get_e_names":
+            case "get_employees_names":
                 result = db.query(true, "SELECT name FROM employees ORDER BY name");
                 break;
 
-            case "get_m_names":
+            case "get_manufacturers_names":
                 result = db.query(true, "SELECT name FROM manufacturers ORDER BY name");
                 break;
 
@@ -385,7 +504,7 @@ public class Server implements Runnable {
 
         switch (_query) {
 
-            case "add_news":
+            /*case "add_news":
                 try {
                     db.query(false,
                             "INSERT INTO news(title, content) " +
@@ -403,7 +522,7 @@ public class Server implements Runnable {
                 } catch (SQLException e) {
                     result = false;
                 }
-                break;
+                break;*/
 
             case "add_sale":
                 try {
@@ -439,6 +558,364 @@ public class Server implements Runnable {
                     result = false;
                 }
                 break;
+
+            case "update_news":
+
+                String fieldNews = null;
+
+                switch (values[0]) {
+                    case "1":
+                        fieldNews = "title";
+                        break;
+                    case "2":
+                        fieldNews = "content";
+                        break;
+                }
+
+                try {
+                    db.query(false,
+                            "UPDATE news " +
+                                    "SET " + fieldNews + " = '" + values[1] + "' " +
+                                    "WHERE id_news = " + values[2]);
+                } catch (SQLException e) {
+                    result = false;
+                }
+                break;
+
+
+            case "update_sales":
+
+                String fieldSale = null;
+
+                switch (values[0]) {
+                    case "1":
+                        fieldSale = "date_sale";
+                        break;
+                    case "2":
+                        fieldSale = "amount";
+                        break;
+                    case "3":
+                        fieldSale = "name";
+                        break;
+                    case "4":
+                        fieldSale = "is_sold";
+                        values[1] = values[1]
+                                .replace("Продано", "t")
+                                .replace("Заказ", "f");
+                        break;
+                    case "5":
+                        fieldSale = "client_name";
+                        break;
+                    case "6":
+                        fieldSale = "client_pnumber";
+                        break;
+                    case "7":
+                        fieldSale = "client_email";
+                        break;
+                }
+
+                try {
+                    db.query(false,
+                            "UPDATE sales " +
+                                    "SET " +
+                                    (!Objects.equals(fieldSale, "name") ? fieldSale : "id_employee")
+                                    + " = " +
+                                    (!Objects.equals(fieldSale, "name")
+                                            ? "'" + values[1] + "'"
+                                            : "(SELECT id_employee FROM employees " +
+                                            "               WHERE name = '" + values[1] + "')")
+                                    + " WHERE id_sale = " + values[2]);
+                } catch (SQLException e) {
+                    result = false;
+                }
+                break;
+
+            case "update_manufacturers":
+
+                String fieldManufacturer = null;
+
+                switch (values[0]) {
+                    case "1":
+                        fieldManufacturer = "name";
+                        break;
+                    case "2":
+                        fieldManufacturer = "country";
+                        break;
+                }
+
+                try {
+                    db.query(false,
+                            "UPDATE manufacturers " +
+                                    "SET " + fieldManufacturer + " = '" + values[1] + "' " +
+                                    "WHERE id_manufacturer = " + values[2]);
+                } catch (SQLException e) {
+                    result = false;
+                }
+                break;
+
+            case "update_employees":
+
+                String fieldEmployee = null;
+
+                switch (values[0]) {
+                    case "1":
+                        fieldEmployee = "name";
+                        break;
+                    case "2":
+                        fieldEmployee = "phone_number";
+                        break;
+                    case "3":
+                        fieldEmployee = "email";
+                        break;
+                    case "4":
+                        fieldEmployee = "address";
+                        break;
+                    case "5":
+                        fieldEmployee = "hiring";
+                        break;
+                    case "6":
+                        fieldEmployee = "position";
+                        break;
+                    case "7":
+                        fieldEmployee = "salary";
+                        break;
+                }
+
+                try {
+                    db.query(false,
+                            "UPDATE employees " +
+                                    "SET " + fieldEmployee + " = '" + values[1] + "' " +
+                                    "WHERE id_employee = " + values[2]);
+                } catch (SQLException e) {
+                    result = false;
+                }
+                break;
+
+            case "update_offers":
+
+                String fieldOffer = null;
+
+                switch (values[0]) {
+                    case "1":
+                        fieldOffer = "title";
+                        break;
+                    case "2":
+                        fieldOffer = "price";
+                        break;
+                    case "3":
+                        fieldOffer = "date_start";
+                        break;
+                    case "4":
+                        fieldOffer = "date_end";
+                        break;
+                    case "5":
+                        fieldOffer = "description";
+                        break;
+                }
+
+                try {
+                    db.query(false,
+                            "UPDATE offers " +
+                                    "SET " + fieldOffer + " = '" + values[1] + "' " +
+                                    "WHERE id_offer = " + values[2]);
+                } catch (SQLException e) {
+                    result = false;
+                }
+                break;
+
+            case "update_tariffs":
+
+                String fieldTariff = null;
+
+                switch (values[0]) {
+                    case "1":
+                        fieldTariff = "title";
+                        break;
+                    case "2":
+                        fieldTariff = "price";
+                        break;
+                    case "3":
+                        fieldTariff = "description";
+                        break;
+                }
+
+                try {
+                    db.query(false,
+                            "UPDATE tariffs " +
+                                    "SET " + fieldTariff + " = '" + values[1] + "' " +
+                                    "WHERE id_tariff = " + values[2]);
+                } catch (SQLException e) {
+                    result = false;
+                }
+                break;
+
+            case "update_phones":
+
+                String table = "phones", fieldPhone = null;
+
+                switch (values[0]) {
+                    case "1":
+                        fieldPhone = "name";
+                        break;
+                    case "15":
+                        fieldPhone = "color";
+                        break;
+                    case "16":
+                        fieldPhone = "price";
+                        break;
+                    case "17":
+                        fieldPhone = "units";
+                        break;
+
+                    case "2":
+                        table = "phone_details";
+                        fieldPhone = "model";
+                        break;
+                    case "3":
+                        table = "phone_details";
+                        fieldPhone = "os";
+                        break;
+                    case "4":
+                        table = "phone_details";
+                        fieldPhone = "ram";
+                        break;
+                    case "5":
+                        table = "phone_details";
+                        fieldPhone = "rom";
+                        break;
+                    case "6":
+                        table = "phone_details";
+                        fieldPhone = "memory_card";
+                        values[1] = values[1]
+                                .replace("Поддерживает", "t")
+                                .replace("Не поддерживает", "f");
+                        break;
+                    case "7":
+                        table = "phone_details";
+                        fieldPhone = "simcard_quant";
+                        break;
+                    case "8":
+                        table = "phone_details";
+                        fieldPhone = "processor";
+                        break;
+                    case "9":
+                        table = "phone_details";
+                        fieldPhone = "batary";
+                        break;
+                    case "10":
+                        table = "phone_details";
+                        fieldPhone = "diagonal";
+                        break;
+                    case "11":
+                        table = "phone_details";
+                        fieldPhone = "resolution";
+                        break;
+                    case "12":
+                        table = "phone_details";
+                        fieldPhone = "camera_main";
+                        break;
+                    case "13":
+                        table = "phone_details";
+                        fieldPhone = "camera_main_two";
+                        values[1] = values[1]
+                                .replace("Нет", null);
+                        break;
+                    case "14":
+                        table = "phone_details";
+                        fieldPhone = "camera_front";
+                        break;
+                }
+
+                try {
+                    if (Objects.equals(table, "phones")) {
+
+                        db.query(false,
+                                "UPDATE phones " +
+                                        "SET " +
+                                        (!Objects.equals(fieldPhone, "name") ? fieldPhone : "id_manufacturer")
+                                        + " = " +
+                                        (!Objects.equals(fieldPhone, "name")
+                                                ? "'" + values[1] + "'"
+                                                : "(SELECT id_manufacturer FROM manufacturers " +
+                                                "               WHERE name = '" + values[1] + "')")
+                                        + " WHERE id_phone = " + values[2]);
+
+                    } else if (Objects.equals(table, "phone_details")) {
+
+                        db.query(false,
+                                "UPDATE phone_details " +
+                                        "SET " + fieldPhone + " = '" + values[1] + "' " +
+                                        "WHERE id_phone_detail = " +
+                                        "(SELECT id_phone_detail FROM phones where id_phone = " + values[2] + ")");
+                    }
+                } catch (SQLException e) {
+                    result = false;
+                }
+                break;
+
+            case "del_news":
+                try {
+                    db.query(false,
+                            "DELETE FROM news WHERE id_news = " + values[0]);
+                } catch (SQLException e) {
+                    result = false;
+                }
+                break;
+
+            case "del_sales":
+                try {
+                    db.query(false,
+                            "DELETE FROM sales WHERE id_sale = " + values[0]);
+                } catch (SQLException e) {
+                    result = false;
+                }
+                break;
+
+            case "del_employees":
+                try {
+                    db.query(false,
+                            "DELETE FROM employees WHERE id_employee = " + values[0]);
+                } catch (SQLException e) {
+                    result = false;
+                }
+                break;
+
+            case "del_tariffs":
+                try {
+                    db.query(false,
+                            "DELETE FROM tariffs WHERE id_tariff = " + values[0]);
+                } catch (SQLException e) {
+                    result = false;
+                }
+                break;
+
+            case "del_offers":
+                try {
+                    db.query(false,
+                            "DELETE FROM offers WHERE id_offer = " + values[0]);
+                } catch (SQLException e) {
+                    result = false;
+                }
+                break;
+
+            case "del_phones":
+                try {
+                    db.query(false,
+                            "DELETE FROM phones WHERE id_phone = " + values[0]);
+                } catch (SQLException e) {
+                    result = false;
+                }
+                break;
+
+            case "del_manufacturers":
+                try {
+                    db.query(false,
+                            "DELETE FROM manufacturers WHERE id_manufacturer = " + values[0]);
+                } catch (SQLException e) {
+                    result = false;
+                }
+                break;
+
         }
 
         return result;
