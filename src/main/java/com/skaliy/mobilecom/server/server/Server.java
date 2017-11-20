@@ -10,6 +10,7 @@ import javafx.scene.control.TextArea;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.sql.SQLException;
+
 import java.util.Objects;
 
 public class Server implements Runnable {
@@ -51,7 +52,6 @@ public class Server implements Runnable {
 
         String _query = query, parameter = "";
         String[] parameters = new String[0];
-//        int index = 0;
 
         if (_query.startsWith("get_id_employee_p-")
                 || _query.startsWith("get_phone_p-")
@@ -59,12 +59,6 @@ public class Server implements Runnable {
                 || _query.startsWith("get_offer_p-")) {
             parameter = _query.substring(_query.lastIndexOf("_p-") + 3);
             _query = _query.substring(0, _query.lastIndexOf("_p-") + 2);
-
-//        } else if (_query.startsWith("get_tariff_i-")
-//                || _query.startsWith("get_sale_phones_i-")
-//                || _query.startsWith("get_sales_phones_all_i-")) {
-//            index = Integer.parseInt(_query.substring(_query.lastIndexOf("_i-") + 3));
-//            _query = _query.substring(0, _query.lastIndexOf("_i-") + 2);
 
         } else if (_query.startsWith("get_phone_c-")
                 || _query.startsWith("get_tariff_c-")
@@ -83,14 +77,23 @@ public class Server implements Runnable {
                 result = db.query(true, "SELECT * FROM employees ORDER BY id_employee");
 
                 for (int i = 0; i < result.length; i++) {
-                    result[i][7] = result[i][7]
-                            .replace(" ?", "");
+                    result[i][7] = String.valueOf(Float.parseFloat(
+                            result[i][7]
+                                    .substring(0, result[i][7].length() - 1)
+                                    .replace(",", ".")
+                                    .replace(" ", "")));
                 }
-
                 break;
 
             case "get_offers":
                 result = db.query(true, "SELECT * FROM offers ORDER BY id_offer");
+                for (int i = 0; i < result.length; i++) {
+                    result[i][2] = String.valueOf(Float.parseFloat(
+                            result[i][2]
+                                    .substring(0, result[i][2].length() - 1)
+                                    .replace(",", ".")
+                                    .replace(" ", "")));
+                }
                 break;
 
             case "get_manufacturers":
@@ -118,13 +121,13 @@ public class Server implements Runnable {
                         result[i][13] = "Нет";
                     }
                     result[i][14] = String.valueOf(Float.parseFloat(result[i][14]));
+                    result[i][16] = String.valueOf(Float.parseFloat(
+                            result[i][16]
+                                    .substring(0, result[i][16].length() - 1)
+                                    .replace(",", ".")
+                                    .replace(" ", "")));
                 }
                 break;
-
-            /*case "get_phone_details_count":
-                result = db.query(true,
-                        "SELECT * FROM phone_details ORDER BY id_phone_detail");
-                break;*/
 
             case "get_sales":
                 String[][] isNull = db.query(true,
@@ -209,6 +212,11 @@ public class Server implements Runnable {
                                     "FROM tariffs " +
                                     "WHERE id_tariff = " + result[i][0] +
                                     " ORDER BY id_tariff")[0];
+                    result[i][2] = String.valueOf(Float.parseFloat(
+                            result[i][2]
+                                    .substring(0, result[i][2].length() - 1)
+                                    .replace(",", ".")
+                                    .replace(" ", "")));
                 }
                 break;
 
@@ -241,23 +249,33 @@ public class Server implements Runnable {
                                 "OR LOWER(d.model) LIKE LOWER('%" + parameter + "%') " +
                                 "OR LOWER(d.os) LIKE LOWER('%" + parameter + "%') " +
                                 "OR LOWER(d.processor) LIKE LOWER('%" + parameter + "%') " +
-                                "OR LOWER(d.resolution) LIKE LOWER('%" + parameter + "%') " +/*
-                                (parameter.matches("^\\d*$") || parameter.contains(".")
-                                        ? "OR p.price = " + parameter +
-                                        "OR d.ram = " + parameter +
-                                        "OR d.rom = " + parameter +
-                                        "OR d.batary = " + parameter +
-                                        "OR d.diagonal = " + parameter +
-                                        "OR d.camera_main = " + parameter +
-                                        "OR d.camera_main_two = " + parameter +
-                                        "OR d.camera_front = " + parameter
-                                        : "")
-                                + */") ORDER BY p.id_phone");
+                                "OR LOWER(d.resolution) LIKE LOWER('%" + parameter + "%') " +
+                                "OR d.ram = '" + parameter +
+                                "' OR d.rom = '" + parameter +
+                                "' OR d.batary = '" + parameter +
+                                "' OR d.diagonal = '" + parameter +
+                                "' OR d.camera_main = '" + parameter +
+                                "' OR d.camera_main_two = '" + parameter +
+                                "' OR d.camera_front = '" + parameter
+                                + "') ORDER BY p.id_phone");
 
                 for (int i = 0; i < result.length; i++) {
                     result[i][6] = result[i][6]
                             .replace("t", "Поддерживает")
                             .replace("f", "Не поддерживает");
+                    result[i][10] = String.valueOf(Float.parseFloat(result[i][10]));
+                    result[i][12] = String.valueOf(Float.parseFloat(result[i][12]));
+                    try {
+                        result[i][13] = String.valueOf(Float.parseFloat(result[i][13]));
+                    } catch (NullPointerException e) {
+                        result[i][13] = "Нет";
+                    }
+                    result[i][14] = String.valueOf(Float.parseFloat(result[i][14]));
+                    result[i][16] = String.valueOf(Float.parseFloat(
+                            result[i][16]
+                                    .substring(0, result[i][16].length() - 1)
+                                    .replace(",", ".")
+                                    .replace(" ", "")));
                 }
                 break;
 
@@ -275,6 +293,14 @@ public class Server implements Runnable {
                                 "WHERE LOWER(title) LIKE LOWER('%" + parameter + "%') " +
                                 "OR LOWER(description) LIKE LOWER('%" + parameter + "%') " +
                                 "ORDER BY id_tariff;");
+
+                for (int i = 0; i < result.length; i++) {
+                    result[i][2] = String.valueOf(Float.parseFloat(
+                            result[i][2]
+                                    .substring(0, result[i][2].length() - 1)
+                                    .replace(",", ".")
+                                    .replace(" ", "")));
+                }
                 break;
 
             case "get_offer_p":
@@ -283,6 +309,13 @@ public class Server implements Runnable {
                                 "WHERE LOWER(title) LIKE LOWER('%" + parameter + "%') " +
                                 "OR LOWER(description) LIKE LOWER('%" + parameter + "%') " +
                                 "ORDER BY id_offer");
+                for (int i = 0; i < result.length; i++) {
+                    result[i][2] = String.valueOf(Float.parseFloat(
+                            result[i][2]
+                                    .substring(0, result[i][2].length() - 1)
+                                    .replace(",", ".")
+                                    .replace(" ", "")));
+                }
                 break;
 
             case "get_offer_c":
@@ -292,11 +325,18 @@ public class Server implements Runnable {
                         parameters[i] = parameters[i].replace("Название услуги", "title");
                     }
                 }
-
                 result = db.query(true,
                         "SELECT * FROM offers " +
                                 "WHERE " + StringUtils.join(parameters, " AND ") +
                                 " ORDER BY id_offer");
+
+                for (int i = 0; i < result.length; i++) {
+                    result[0][2] = String.valueOf(Float.parseFloat(
+                            result[0][2]
+                                    .substring(0, result[0][2].length() - 1)
+                                    .replace(",", ".")
+                                    .replace(" ", "")));
+                }
                 break;
 
             case "get_tariff_c":
@@ -318,6 +358,14 @@ public class Server implements Runnable {
                                 "FROM tariffs t " +
                                 "WHERE " + StringUtils.join(parameters, " AND ") +
                                 " ORDER BY t.id_tariff");
+
+                for (int i = 0; i < result.length; i++) {
+                    result[i][2] = String.valueOf(Float.parseFloat(
+                            result[i][2]
+                                    .substring(0, result[i][2].length() - 1)
+                                    .replace(",", ".")
+                                    .replace(" ", "")));
+                }
                 break;
 
             case "get_phone_c":
@@ -369,6 +417,19 @@ public class Server implements Runnable {
                     result[i][6] = result[i][6]
                             .replace("t", "Поддерживает")
                             .replace("f", "Не поддерживает");
+                    result[i][10] = String.valueOf(Float.parseFloat(result[i][10]));
+                    result[i][12] = String.valueOf(Float.parseFloat(result[i][12]));
+                    try {
+                        result[i][13] = String.valueOf(Float.parseFloat(result[i][13]));
+                    } catch (NullPointerException e) {
+                        result[i][13] = "Нет";
+                    }
+                    result[i][14] = String.valueOf(Float.parseFloat(result[i][14]));
+                    result[i][16] = String.valueOf(Float.parseFloat(
+                            result[i][16]
+                                    .substring(0, result[i][16].length() - 1)
+                                    .replace(",", ".")
+                                    .replace(" ", "")));
                 }
                 break;
 
@@ -512,19 +573,6 @@ public class Server implements Runnable {
                 }
                 break;
 
-            case "add_phones_pd":
-
-                try {
-                    db.query(false,
-                            "INSERT INTO phones(id_manufacturer, id_phone_detail, color, price, units) " +
-                                    "VALUES (" +
-                                    "(SELECT id_manufacturer FROM manufacturers WHERE name = '" + values[0] + "'), " +
-                                    values[1] + ", '" + values[2] + "', " + values[3] + ", " + values[4] + ")");
-                } catch (SQLException e) {
-                    result = false;
-                }
-                break;
-
             case "add_phones":
 
                 try {
@@ -539,18 +587,33 @@ public class Server implements Runnable {
                 }
                 break;
 
+            case "add_phones_pd":
+
+                try {
+                    db.query(false,
+                            "INSERT INTO phones(id_manufacturer, id_phone_detail, color, price, units) " +
+                                    "VALUES (" +
+                                    "(SELECT id_manufacturer FROM manufacturers WHERE name = '" + values[0] + "'), " +
+                                    values[1] + ", '" + values[2] + "', " + values[3] + ", " + values[4] + ")");
+                } catch (SQLException e) {
+                    result = false;
+                }
+                break;
+
             case "add_phone_details":
                 values[12] = values[12]
-                        .replace("Поддерживается", "t")
-                        .replace("Не поддерживается", "f");
+                        .replace("Поддерживает", "t")
+                        .replace("Не поддерживает", "f");
+                values[10] = values[10]
+                        .replace("Нет", "null");
                 try {
-                    db.query(true,
+                    db.query(false,
                             "INSERT INTO phone_details(model, os, ram, rom, simcard_quant, processor, " +
                                     "batary, diagonal, resolution, camera_main, camera_main_two, camera_front, memory_card) " +
                                     "VALUES('" + values[0] + "', '" + values[1] + "', " +
                                     values[2] + ", " + values[3] + ", " + values[4] + ", '" +
                                     values[5] + "', " + values[6] + ", " + values[7] + ", '" +
-                                    values[8] + "', " + values[9] + ", "  + values[10] + ", " +
+                                    values[8] + "', " + values[9] + ", " + values[10] + ", " +
                                     values[11] + ", '" + values[12] + "')");
                 } catch (SQLException e) {
                     result = false;
@@ -851,7 +914,7 @@ public class Server implements Runnable {
                         table = "phone_details";
                         fieldPhone = "camera_main_two";
                         values[1] = values[1]
-                                .replace("Нет", null);
+                                .replace("Нет", "null");
                         break;
                     case "14":
                         table = "phone_details";
@@ -867,7 +930,7 @@ public class Server implements Runnable {
                                         (!Objects.equals(fieldPhone, "name") ? fieldPhone : "id_manufacturer")
                                         + " = " +
                                         (!Objects.equals(fieldPhone, "name")
-                                                ? "'" + values[1] + "'"
+                                                ? (Objects.equals(values[0], "15") ? "'" + values[1] + "'" : values[1])
                                                 : "(SELECT id_manufacturer FROM manufacturers " +
                                                 "               WHERE name = '" + values[1] + "')")
                                         + " WHERE id_phone = " + values[2]);
