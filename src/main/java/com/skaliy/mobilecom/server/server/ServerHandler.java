@@ -89,7 +89,6 @@ public class ServerHandler extends ChannelInboundMessageHandlerAdapter<String> {
 
                     for (String[] record : quertResult) {
                         Server.addLog(Arrays.toString(record));
-
                         for (int i = 0; i < record.length; i++) {
                             try {
                                 record[i] = record[i]
