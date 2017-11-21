@@ -1,6 +1,6 @@
 package com.skaliy.mobilecom.server.fxapp;
 
-import com.skaliy.mobilecom.server.connection.DBConnectionFile;
+import com.skaliy.mobilecom.server.connection.FileConnection;
 import com.skaliy.mobilecom.server.server.Server;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -30,7 +30,7 @@ public class Controller {
 
         buttonStart.setOnAction(event -> {
 
-            DBConnectionFile file = new DBConnectionFile("db.txt");
+            FileConnection file = new FileConnection("db.txt");
             BufferedReader dataConnection;
 
             try {

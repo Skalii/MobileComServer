@@ -1,6 +1,6 @@
 package com.skaliy.mobilecom.server.server;
 
-import com.skaliy.dbc.dbms.PostgreSQL;
+import com.skaliy.mobilecom.server.connection.dbms.PostgreSQL;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -226,6 +226,13 @@ public class Server implements Runnable {
 
             case "get_last_pd":
                 result = db.query(true, "SELECT max(id_phone_detail) FROM phone_details");
+                break;
+
+            case "get_email_employee_p":
+                result = db.query(true,
+                        "SELECT email " +
+                                "FROM employees " +
+                                "WHERE email = '" + parameter + "'");
                 break;
 
             case "get_id_employee_p":
