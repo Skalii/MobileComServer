@@ -27,7 +27,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.skaliy.mobilecom.server.fxapp.Main</mainClass>
+                            <mainClass>com.skaliy.mobilecom.server.fxapp.MainServer</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -54,7 +54,7 @@
                     <goal>jar:inplace</goal>
                     <archive>
                         <manifest>
-                            <mainClass>com.skaliy.mobilecom.server.fxapp.Main</mainClass>
+                            <mainClass>com.skaliy.mobilecom.server.fxapp.MainServer</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -65,7 +65,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>8.8.3</version>
                 <configuration>
-                    <mainClass>com.skaliy.mobilecom.server.fxapp.Controller</mainClass>
+                    <mainClass>com.skaliy.mobilecom.server.fxapp.ControllerServer</mainClass>
                 </configuration>
             </plugin>
 
@@ -74,6 +74,12 @@
 
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.1.4</version>
+        </dependency>
 
         <dependency>
             <groupId>com.intellij</groupId>
@@ -85,12 +91,6 @@
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
             <version>15.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.skaliy</groupId>
-            <artifactId>com.skaliy.dbc</artifactId>
-            <version>1.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>

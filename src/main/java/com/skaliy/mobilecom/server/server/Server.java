@@ -56,13 +56,15 @@ public class Server implements Runnable {
         if (_query.startsWith("get_id_employee_p-")
                 || _query.startsWith("get_phone_p-")
                 || _query.startsWith("get_tariff_p-")
-                || _query.startsWith("get_offer_p-")) {
+                || _query.startsWith("get_offer_p-")
+                || _query.startsWith("get_email_employee_p-")) {
             parameter = _query.substring(_query.lastIndexOf("_p-") + 3);
             _query = _query.substring(0, _query.lastIndexOf("_p-") + 2);
 
         } else if (_query.startsWith("get_phone_c-")
                 || _query.startsWith("get_tariff_c-")
-                || _query.startsWith("get_offer_c-")) {
+                || _query.startsWith("get_offer_c-")
+                || _query.startsWith("get_pass_employee_c-")) {
             parameters = _query.substring(_query.lastIndexOf("_c-") + 3).split(";");
             _query = _query.substring(0, _query.lastIndexOf("_c-") + 2);
         }
@@ -74,7 +76,9 @@ public class Server implements Runnable {
                 break;
 
             case "get_employees":
-                result = db.query(true, "SELECT * FROM employees ORDER BY id_employee");
+                result = db.query(true,
+                        "SELECT id_employee, name, phone_number, email, address, hiring, position, salary " +
+                                "FROM employees ORDER BY id_employee");
 
                 for (int i = 0; i < result.length; i++) {
                     result[i][7] = String.valueOf(Float.parseFloat(
@@ -220,6 +224,109 @@ public class Server implements Runnable {
                 }
                 break;
 
+            case "get_last_news":
+                result = db.query(true,
+                        "SELECT * FROM news WHERE id_news = (SELECT max(id_news) FROM news)");
+                break;
+
+            case "get_last_sales":
+                result = db.query(true,
+                        "SELECT id_sale, date_sale, amount, id_employee, is_sold, " +
+                                "client_name, client_pnumber, client_email, " +
+                                "array(" +
+                                "   SELECT concat(m.name, ' ', pd.model) " +
+                                "   FROM phones p, phone_details pd, manufacturers m, sales s " +
+                                "   WHERE p.id_phone_detail = pd.id_phone_detail " +
+                                "   AND p.id_manufacturer = m.id_manufacturer " +
+                                "   AND s.id_sale = (SELECT max(id_sale) FROM sales) " +
+                                "   AND p.id_phone = ANY (s.ids_phones)) :: TEXT, " +
+                                "units_phones, " +
+                                "array(" +
+                                "   SELECT t.title " +
+                                "   FROM tariffs t, sales s " +
+                                "   WHERE s.id_sale = (SELECT max(id_sale) FROM sales) " +
+                                "   AND t.id_tariff = ANY (s.ids_tariffs)) :: TEXT, " +
+                                "units_tariffs " +
+                                "FROM sales " +
+                                "WHERE id_sale = (SELECT max(id_sale) FROM sales)");
+
+                result[0][4] = result[0][4]
+                        .replace("t", "Продано")
+                        .replace("f", "Заказ");
+                break;
+
+            case "get_last_employees":
+                result = db.query(true,
+                        "SELECT id_employee, name, phone_number, email, address, hiring, position, salary " +
+                                "FROM employees " +
+                                "WHERE id_employee = (SELECT max(id_employee) FROM employees)");
+                break;
+
+            case "get_last_tariffs":
+                result = db.query(true,
+                        "SELECT id_tariff, title, price, description, " +
+                                "array(" +
+                                "   SELECT o.title " +
+                                "   FROM offers o, tariffs t " +
+                                "   WHERE t.id_tariff = (SELECT max(id_tariff) FROM tariffs) " +
+                                "   AND o.id_offer = ANY (t.ids_offer) " +
+                                ") :: TEXT " +
+                                "FROM tariffs " +
+                                "WHERE id_tariff = (SELECT max(id_tariff) FROM tariffs)");
+
+                result[0][2] = String.valueOf(Float.parseFloat(
+                        result[0][2]
+                                .substring(0, result[0][2].length() - 1)
+                                .replace(",", ".")
+                                .replace(" ", "")));
+                break;
+
+            case "get_last_offers":
+                result = db.query(true,
+                        "SELECT * FROM offers " +
+                                "WHERE id_offer = (SELECT max(id_offer) FROM offers)");
+
+                result[0][2] = String.valueOf(Float.parseFloat(
+                        result[0][2]
+                                .substring(0, result[0][2].length() - 1)
+                                .replace(",", ".")
+                                .replace(" ", "")));
+                break;
+
+            case "get_last_phones":
+                result = db.query(true,
+                        "SELECT p.id_phone, m.name, d.model, d.os, d.ram, d.rom, d.memory_card, " +
+                                "d.simcard_quant, d.processor, d.batary, d.diagonal, d.resolution, " +
+                                "d.camera_main, d.camera_main_two, d.camera_front, p.color, p.price, p.units " +
+                                "FROM phones p, manufacturers m, phone_details d " +
+                                "WHERE p.id_manufacturer = m.id_manufacturer " +
+                                "AND p.id_phone_detail = d.id_phone_detail " +
+                                "AND id_phone = (SELECT max(id_phone) FROM phones)");
+
+                result[0][6] = result[0][6]
+                        .replace("t", "Поддерживает")
+                        .replace("f", "Не поддерживает");
+                result[0][10] = String.valueOf(Float.parseFloat(result[0][10]));
+                result[0][12] = String.valueOf(Float.parseFloat(result[0][12]));
+                try {
+                    result[0][13] = String.valueOf(Float.parseFloat(result[0][13]));
+                } catch (NullPointerException e) {
+                    result[0][13] = "Нет";
+                }
+                result[0][14] = String.valueOf(Float.parseFloat(result[0][14]));
+                result[0][16] = String.valueOf(Float.parseFloat(
+                        result[0][16]
+                                .substring(0, result[0][16].length() - 1)
+                                .replace(",", ".")
+                                .replace(" ", "")));
+                break;
+
+            case "get_last_manufacturers":
+                result = db.query(true,
+                        "SELECT * FROM manufacturers " +
+                                "WHERE id_manufacturer = (SELECT max(id_manufacturer) FROM manufacturers)");
+                break;
+
             case "get_last_sale":
                 result = db.query(true, "SELECT max(id_sale) FROM sales");
                 break;
@@ -232,7 +339,8 @@ public class Server implements Runnable {
                 result = db.query(true,
                         "SELECT email " +
                                 "FROM employees " +
-                                "WHERE email = '" + parameter + "'");
+                                "WHERE email = '" + parameter + "' " +
+                                "AND position = 'Admin'");
                 break;
 
             case "get_id_employee_p":
@@ -323,6 +431,21 @@ public class Server implements Runnable {
                                     .replace(",", ".")
                                     .replace(" ", "")));
                 }
+                break;
+
+
+            case "get_pass_employee_c":
+                for (int i = 0; i < parameters.length; i++) {
+                    if (parameters[i].startsWith("Е")) {
+                        parameters[i] = parameters[i].replace("Е", "email");
+                    } else if (parameters[i].startsWith("П")) {
+                        parameters[i] = parameters[i].replace("П", "password");
+                    }
+                }
+                result = db.query(true,
+                        "SELECT password " +
+                                "FROM employees " +
+                                "WHERE " + StringUtils.join(parameters, " AND "));
                 break;
 
             case "get_offer_c":
@@ -1031,8 +1154,13 @@ public class Server implements Runnable {
         Server.textAreaLogs = textAreaLogs;
     }
 
-    static void addLog(String log) {
-        Server.textAreaLogs.appendText(log + "\n");
+    public static void addLog(String log) {
+        //try {
+        textAreaLogs.appendText(log + "\n");
+//        } catch (ArrayIndexOutOfBoundsException e) {
+//            textAreaLogs.clear();
+//            addLog(log);
+//        }
     }
 
 }

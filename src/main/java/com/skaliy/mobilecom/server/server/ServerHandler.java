@@ -36,8 +36,6 @@ public class ServerHandler extends ChannelInboundMessageHandlerAdapter<String> {
         } catch (NullPointerException ignored) {
         }
 
-        System.out.println(message);
-
         if (message.startsWith("false") || message.startsWith("true")) {
 //            String bool = message.substring(0, message.indexOf(":")),
             message = message.substring(message.indexOf(":") + 1);
