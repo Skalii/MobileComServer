@@ -1155,12 +1155,7 @@ public class Server implements Runnable {
     }
 
     public static void addLog(String log) {
-        //try {
         textAreaLogs.appendText(log + "\n");
-//        } catch (ArrayIndexOutOfBoundsException e) {
-//            textAreaLogs.clear();
-//            addLog(log);
-//        }
     }
 
 }
